@@ -8,9 +8,11 @@
   "author": "Emmanuel FITOUSSI <manu.fitoussi@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "test": "mocha"
   },
   "devDependencies": {
+    "mocha": "^10.1.0",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.0"
   }
