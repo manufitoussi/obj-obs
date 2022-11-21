@@ -1,0 +1,9 @@
+{
+  "name": "obj-obs",
+  "version": "0.1.0",
+  "description": "A simple way to observe JS object value changing by adressing by its path.",
+  "main": "index.js",
+  "repository": "https://github.com/manufitoussi/obj-obs.git",
+  "author": "Emmanuel FITOUSSI <manu.fitoussi@gmail.com>",
+  "license": "MIT"
+}
