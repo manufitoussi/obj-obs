@@ -2,8 +2,16 @@
   "name": "obj-obs",
   "version": "0.1.0",
   "description": "A simple way to observe JS object value changing by adressing by its path.",
-  "main": "index.js",
+  "main": "dist/obj-obs.js",
+  "type": "module",
   "repository": "https://github.com/manufitoussi/obj-obs.git",
   "author": "Emmanuel FITOUSSI <manu.fitoussi@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.0"
+  }
 }
