@@ -11,7 +11,7 @@ const container = {
 };
 
 const createObjs = () => {
-  container.objs = Array.from({length: 20000}, (v, k) => k).map(i => {
+  obs2.set(container, 'objs',  Array.from({length: 20000}, (v, k) => k).map(i => {
     return {
       a: {
         _n: "a",
@@ -32,11 +32,11 @@ const createObjs = () => {
         }
       }
     };
-  });
+  }));
 };
 
 const deleteObjs = () => {
-  container.objs = null;
+  obs2.set(container, 'objs', null);
 }
 
 const callback1 = ({...args}) => {
@@ -55,25 +55,43 @@ const unobserve = () => {
   });
 };
 
+const onObjsChange = ({newValue}) => {
+  if (newValue) {
+    document.querySelector('#count').innerHTML = newValue.length;
+    document.querySelector('#observe button').disabled = false;
+    document.querySelector('#unobserve button').disabled = false;
+  } else {
+    document.querySelector('#count').innerHTML = 0;
+    document.querySelector('#observe button').disabled = true;
+    document.querySelector('#unobserve button').disabled = true;
+  }
+}
+
+const obs2 = new ObjObserver();
+
+obs2.observe(container, 'objs', onObjsChange);
+
     </script>
   </head>
   <body>
     
-    <p>
+    <p id="create">
       <button onclick="createObjs();">Create Objects</button>
     </p>
     
-    <p>
+    <p id="delete">
       <button onclick="deleteObjs();">Remove Objects</button>
     </p>
 
-    <p>
-      <button onclick="observe();">Observe</button>
+    <p id="observe" >
+      <button onclick="observe();" disabled>Observe</button>
     </p>
 
-    <p>
-      <button onclick="unobserve();">Unobserve</button>
+    <p id="unobserve" >
+      <button onclick="unobserve();" disabled>Unobserve</button>
     </p>
+
+    <p id="count"></p>
 
   </body>
 </html>
