@@ -3,8 +3,77 @@
   <head>
     <script src="../dist/obj-obs.js" ></script>
     <script>
-      console.log('obs-obs', ObjObs);
+console.log('obs-obs');
+const ObjObserver = ObjObs.default;
+const obs = new ObjObserver();
+const container = {
+  objs: null,
+};
+
+const createObjs = () => {
+  container.objs = Array.from({length: 20000}, (v, k) => k).map(i => {
+    return {
+      a: {
+        _n: "a",
+        _v: 1,
+        b: {
+          _n: "b",
+          _v: 1,
+          c: {
+            _n: "c",
+            _v: 1,
+            d: 1
+          },
+          e: {
+            _n: "e",
+            _v: 1,
+            f: 1
+          }
+        }
+      }
+    };
+  });
+};
+
+const deleteObjs = () => {
+  container.objs = null;
+}
+
+const callback1 = ({...args}) => {
+  console.log(...args);
+};
+
+const observe = () => {
+  container.objs.forEach(obj => {
+    obs.observe(obj,'a.b.c.d', callback1);
+  });
+};
+
+const unobserve = () => {
+  container.objs.forEach(obj => {
+    obs.unobserve(obj,'a.b.c.d', callback1);
+  });
+};
+
     </script>
   </head>
-  <body></body>
+  <body>
+    
+    <p>
+      <button onclick="createObjs();">Create Objects</button>
+    </p>
+    
+    <p>
+      <button onclick="deleteObjs();">Remove Objects</button>
+    </p>
+
+    <p>
+      <button onclick="observe();">Observe</button>
+    </p>
+
+    <p>
+      <button onclick="unobserve();">Unobserve</button>
+    </p>
+
+  </body>
 </html>
