@@ -1,5 +1,7 @@
-
-export default class ObjObs {
+/**
+ * @class Observer class.
+ */
+class ObjObs {
   _observed = new WeakMap();
 
   /*
@@ -16,10 +18,12 @@ export default class ObjObs {
   */
 
   /**
-   * Observes an object value changing by adressing by its path.
+   * Observes an object value changing by following a path.
+   * 
+   * Changes are notified by using set() method to change the value on the object or by using notify() method after classical change.
    * @param {object} object Object to observe.
-   * @param {string} path Path of the value to observe. ex: "a.b.c", "props.name" or "name". 
-   * @param {function} onChangeCallback Callback function executed when value changed. Args : { object,
+   * @param {string} path Path to the value to observe. ex: "a.b.c", "props.name" or "name". 
+   * @param {function} onChangeCallback Callback function executed when value changed. Arguments : { object,
         key, oldValue, newValue, origin } 
    */
   observe(object, path, onChangeCallback) {
@@ -47,7 +51,6 @@ export default class ObjObs {
           path,
           oPath
         };
-        // parent = origin;
         keyEntry.set(onChangeCallback, origin);
       }
 
@@ -56,6 +59,12 @@ export default class ObjObs {
     }
   }
 
+    /**
+   * Unobserves an observed object. 
+   * @param {object} object Object to unobserve.
+   * @param {string} path Path to the observed value. 
+   * @param {function} onChangeCallback Callback function executed when value changed. 
+   */
   unobserve(object, path, onChangeCallback) {
     let child = object;
     const keys = path.split(".");
@@ -73,7 +82,7 @@ export default class ObjObs {
     }
   }
 
-  resolve(object, key, oldValue, newValue) {
+  _resolve(object, key, oldValue, newValue) {
     if (!object || typeof object !== "object") return;
     let objectEntry = this._observed.get(object);
     if (!objectEntry) return;
@@ -110,6 +119,12 @@ export default class ObjObs {
     }
   }
 
+  /**
+   * Change the value following a path of an object. 
+   * @param {object} object Object to change.
+   * @param {string} path Path to the value to change.
+   * @param {any} value New value.
+   */
   set(object, path, value) {
     if (!path) return;
     if (!object) return;
@@ -124,9 +139,15 @@ export default class ObjObs {
 
     const oldValue = current[lastKey];
     current[lastKey] = value;
-    this.resolve(current, lastKey, oldValue, value);
+    this._resolve(current, lastKey, oldValue, value);
   }
 
+  /**
+   * Obtains the value following a path of an object. 
+   * @param {object} object Object.
+   * @param {string} path Path to the value.
+   * @returns {any} Value
+   */
   get(object, path) {
     if (!path) return object;
     const [lastKey, ...keys] = path.split(".").reverse();
@@ -141,11 +162,18 @@ export default class ObjObs {
     return result;
   }
 
+  /**
+   * Notify a value change.
+   * @param {*} object Object that has changed
+   * @param {*} path Path to the changed value.
+   * @param {*} oldValue Old value.
+   * @param {*} newValue New value.
+   */
   notify(object, path, oldValue, newValue) {
     const [lastKey, ...keys] = path.split(".").reverse();
     keys.reverse();
-    this.resolve(this.get(object, keys.join(".")), lastKey, oldValue, newValue);
+    this._resolve(this.get(object, keys.join(".")), lastKey, oldValue, newValue);
   }
 }
 
-
+export default ObjObs;

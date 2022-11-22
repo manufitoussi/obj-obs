@@ -1,5 +1,9 @@
 import { equal, ok } from 'assert';
 import ObjObs from '../src/obj-obs.js';
+  
+// TODO test set
+// TODO test get
+// TODO test notify
 
 describe('ObjObs Tests', () => {
   it('ObjObs instance', () =>  {
@@ -8,14 +12,11 @@ describe('ObjObs Tests', () => {
     ok(obs._observed);
     ok(obs.observe);
     ok(obs.unobserve);
-    ok(obs.resolve);
+    ok(obs._resolve);
     ok(obs.set);
     ok(obs.get);
     ok(obs.notify);
   });
-
-  // TODO test set
-  // TODO test get
 
   it('property observation', () =>  {
     const obs = new ObjObs();
@@ -108,8 +109,6 @@ describe('ObjObs Tests', () => {
     obs.unobserve(test1, 'propA', callback1);
     equal(callbackEntriesA.size, 0, '0 entrie');
   });
-
-  // TODO test notify
 
   it('path observation', () =>  {
     const obs = new ObjObs();
