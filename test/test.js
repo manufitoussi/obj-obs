@@ -1,22 +1,21 @@
 import { equal, ok } from 'assert';
-import ObjObs, {get, set, notify, observe, unobserve} from '../src/obj-obs.js';
-  
+import ObjObs, { observe, unobserve } from '../src/obj-obs.js';
+import { get, set, notify } from '../src/object.js';
+
 // TODO test set
 // TODO test get
 // TODO test notify
 
 describe('ObjObs Tests', () => {
-  it('ObjObs instance', () =>  {
+  it('ObjObs instance', () => {
     ok(ObjObs);
     ok(ObjObs._OBSERVED);
+    ok(ObjObs._resolve);
     ok(ObjObs.observe);
     ok(ObjObs.unobserve);
-    ok(ObjObs.set);
-    ok(ObjObs.get);
-    ok(ObjObs.notify);
   });
 
-  it('property observation', () =>  {
+  it('property observation', () => {
     const test1 = {
       propA: 1,
       propB: 2,
@@ -26,7 +25,7 @@ describe('ObjObs Tests', () => {
     const callback1 = (args) => {
       results.push({ name: 'callback1', ...args });
     };
-    
+
     const callback2 = (args) => {
       results.push({ name: 'callback2', ...args });
     };
@@ -47,9 +46,9 @@ describe('ObjObs Tests', () => {
     equal(results[0].origin.object.deref(), test1);
     equal(results[0].origin.path, 'propA');
     equal(results[0].origin.oPath, '');
-    
 
-    observe(test1, 'propA', callback2);    
+
+    observe(test1, 'propA', callback2);
     equal(callbackEntries.size, 2, '2 entries');
 
     set(test1, 'propA', 4);
@@ -70,7 +69,7 @@ describe('ObjObs Tests', () => {
 
   });
 
-  it('properties observation', () =>  {
+  it('properties observation', () => {
     const test1 = {
       propA: 1,
       propB: 2,
@@ -80,7 +79,7 @@ describe('ObjObs Tests', () => {
     const callback1 = (args) => {
       results.push({ name: 'callback1', ...args });
     };
-    
+
     const callback2 = (args) => {
       results.push({ name: 'callback2', ...args });
     };
@@ -106,7 +105,7 @@ describe('ObjObs Tests', () => {
     equal(callbackEntriesA.size, 0, '0 entrie');
   });
 
-  it('path observation', () =>  {
+  it('path observation', () => {
     const test1 = {
       a: {
         _n: "a",
@@ -126,7 +125,7 @@ describe('ObjObs Tests', () => {
     const callback1 = (args) => {
       results.push({ name: 'callback1', ...args });
     };
-    
+
     const callback2 = (args) => {
       results.push({ name: 'callback2', ...args });
     };
@@ -136,7 +135,7 @@ describe('ObjObs Tests', () => {
     ok(ObjObs._OBSERVED.get(test1.a));
     ok(ObjObs._OBSERVED.get(test1.a.b));
     ok(ObjObs._OBSERVED.get(test1.a.b.c));
-    
+
     set(test1, 'a.b.c.d', 2);
     equal(results[0].name, 'callback1');
     equal(results[0].object, test1.a.b.c);
@@ -146,7 +145,7 @@ describe('ObjObs Tests', () => {
     equal(results[0].origin.object.deref(), test1);
     equal(results[0].origin.path, 'a.b.c.d');
     equal(results[0].origin.oPath, 'a.b.c');
-    
+
     unobserve(test1, 'a.b.c.d', callback1);
     equal(ObjObs._OBSERVED.get(test1).size, 1);
     equal(ObjObs._OBSERVED.get(test1).get('a').size, 0);
@@ -162,7 +161,7 @@ describe('ObjObs Tests', () => {
 
   });
 
-  it('paths observation', () =>  {
+  it('paths observation', () => {
     const test1 = {
       a: {
         _n: "a",
@@ -187,7 +186,7 @@ describe('ObjObs Tests', () => {
     const callback1 = (args) => {
       results.push({ name: 'callback1', ...args });
     };
-    
+
     const callback2 = (args) => {
       results.push({ name: 'callback2', ...args });
     };
@@ -233,9 +232,9 @@ describe('ObjObs Tests', () => {
     equal(results[2].origin.object.deref(), test1);
     equal(results[2].origin.path, 'a.b.c.d');
     equal(results[2].origin.oPath, 'a.b.c');
-    
-    
-    
+
+
+
     set(test1, 'a.b.e.f', 4);
     equal(results.length, 4);
     equal(results[3].name, 'callback2');
@@ -246,7 +245,7 @@ describe('ObjObs Tests', () => {
     equal(results[3].origin.object.deref(), test1);
     equal(results[3].origin.path, 'a.b.e.f');
     equal(results[3].origin.oPath, 'a.b.e');
-    
+
     set(bV1, 'c.d', 5);
     equal(results.length, 4);
 
