@@ -98,6 +98,7 @@ export function _resolve(object, key, oldValue, newValue) {
 
   if (oldValue && typeof oldValue === "object") {
     const oldObjectEntry = OBSERVED.get(oldValue);
+    if (!oldObjectEntry) return;
     for (const [key, keyEntry] of [...oldObjectEntry.entries()]) {
       for (const [onChangeCallback, origin] of [...keyEntry.entries()]) {
         unobserve(origin.object.deref(), origin.path, onChangeCallback);
