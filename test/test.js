@@ -1,5 +1,5 @@
 import { equal, ok } from 'assert';
-import ObjObs, { observe, unobserve } from '../src/obj-obs.js';
+import ObjObs, { observe, unobserve } from '../src/observe.js';
 import { get, set, notify } from '../src/object.js';
 
 // TODO test set

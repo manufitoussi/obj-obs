@@ -1,4 +1,4 @@
-import {get} from './object.js';
+import { get } from './object.js';
 const OBSERVED = new WeakMap();
 
 /*

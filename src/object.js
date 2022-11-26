@@ -1,4 +1,4 @@
-import { _resolve } from "./obj-obs.js";
+import { _resolve } from "./observe.js";
 /**
  * Change the value following a path of an object. 
  * @param {object} object Object to change.
