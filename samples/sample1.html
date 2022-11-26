@@ -1,97 +1,96 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script src="../dist/obj-obs.js" ></script>
-    <script>
-console.log('obs-obs');
-const ObjObserver = ObjObs.default;
-const obs = new ObjObserver();
-const container = {
-  objs: null,
-};
 
-const createObjs = () => {
-  obs2.set(container, 'objs',  Array.from({length: 20000}, (v, k) => k).map(i => {
-    return {
-      a: {
-        _n: "a",
-        _v: 1,
-        b: {
-          _n: "b",
-          _v: 1,
-          c: {
-            _n: "c",
-            _v: 1,
-            d: 1
-          },
-          e: {
-            _n: "e",
-            _v: 1,
-            f: 1
-          }
-        }
-      }
+<head>
+  <script src="../dist/obj-obs.js"></script>
+  <script>
+    const { get, set, observe, unobserve } = ObjObs.default;
+    const container = {
+      objs: null,
     };
-  }));
-};
 
-const deleteObjs = () => {
-  obs2.set(container, 'objs', null);
-}
+    const createObjs = () => {
+      set(container, 'objs', Array.from({ length: 20000 }, (v, k) => k).map(i => {
+        return {
+          a: {
+            _n: "a",
+            _v: 1,
+            b: {
+              _n: "b",
+              _v: 1,
+              c: {
+                _n: "c",
+                _v: 1,
+                d: 1
+              },
+              e: {
+                _n: "e",
+                _v: 1,
+                f: 1
+              }
+            }
+          }
+        };
+      }));
+    };
 
-const callback1 = ({...args}) => {
-  console.log(...args);
-};
+    const deleteObjs = () => {
+      set(container, 'objs', null);
+    }
 
-const observe = () => {
-  container.objs.forEach(obj => {
-    obs.observe(obj,'a.b.c.d', callback1);
-  });
-};
+    const callback1 = ({ ...args }) => {
+      console.log(...args);
+    };
 
-const unobserve = () => {
-  container.objs.forEach(obj => {
-    obs.unobserve(obj,'a.b.c.d', callback1);
-  });
-};
+    const observeAll = () => {
+      container.objs.forEach(obj => {
+        observe(obj, 'a.b.c.d', callback1);
+      });
+    };
 
-const onObjsChange = ({newValue}) => {
-  if (newValue) {
-    document.querySelector('#count').innerHTML = newValue.length;
-    document.querySelector('#observe button').disabled = false;
-    document.querySelector('#unobserve button').disabled = false;
-  } else {
-    document.querySelector('#count').innerHTML = 0;
-    document.querySelector('#observe button').disabled = true;
-    document.querySelector('#unobserve button').disabled = true;
-  }
-}
+    const unobserveAll = () => {
+      container.objs.forEach(obj => {
+        unobserve(obj, 'a.b.c.d', callback1);
+      });
+    };
 
-const obs2 = new ObjObserver();
+    const onObjsChange = ({ newValue }) => {
+      if (newValue) {
+        document.querySelector('#count').innerHTML = newValue.length;
+        document.querySelector('#observe button').disabled = false;
+        document.querySelector('#unobserve button').disabled = false;
+      } else {
+        document.querySelector('#count').innerHTML = 0;
+        document.querySelector('#observe button').disabled = true;
+        document.querySelector('#unobserve button').disabled = true;
+      }
+    }
 
-obs2.observe(container, 'objs', onObjsChange);
+    observe(container, 'objs', onObjsChange);
 
-    </script>
-  </head>
-  <body>
-    
-    <p id="create">
-      <button onclick="createObjs();">Create Objects</button>
-    </p>
-    
-    <p id="delete">
-      <button onclick="deleteObjs();">Remove Objects</button>
-    </p>
+  </script>
+</head>
 
-    <p id="observe" >
-      <button onclick="observe();" disabled>Observe</button>
-    </p>
+<body>
 
-    <p id="unobserve" >
-      <button onclick="unobserve();" disabled>Unobserve</button>
-    </p>
+  <p id="create">
+    <button onclick="createObjs();">Create Objects</button>
+  </p>
 
-    <p id="count"></p>
+  <p id="delete">
+    <button onclick="deleteObjs();">Remove Objects</button>
+  </p>
 
-  </body>
+  <p id="observe">
+    <button onclick="observeAll();" disabled>Observe</button>
+  </p>
+
+  <p id="unobserve">
+    <button onclick="unobserveAll();" disabled>Unobserve</button>
+  </p>
+
+  <p id="count"></p>
+
+</body>
+
 </html>
