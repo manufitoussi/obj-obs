@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest';
-import { get, set } from '../src/index.js';
+import { get, observe, set } from '../src/index.js';
 import type { Path } from '../src/index.js';
 
 const actor = {
@@ -39,5 +39,26 @@ describe('typed paths', () => {
     set(actor, 'properties.color', 'blue');
     // @ts-expect-error a number is not a color
     set(actor, 'properties.color', 1);
+  });
+});
+
+describe('typed observations', () => {
+  it('types the values given to the callback', () => {
+    observe(actor, 'properties.width', (e) => {
+      expectTypeOf(e.newValue).toEqualTypeOf<number | null>();
+      expectTypeOf(e.root).toEqualTypeOf<typeof actor>();
+    });
+  });
+
+  it('rejects unknown paths', () => {
+    // @ts-expect-error unknown path
+    observe(actor, 'properties.colr', () => {});
+  });
+
+  it('falls back to unknown for dynamic paths', () => {
+    const path: string = 'properties.color';
+    observe(actor, path, (e) => {
+      expectTypeOf(e.newValue).toEqualTypeOf<unknown>();
+    });
   });
 });

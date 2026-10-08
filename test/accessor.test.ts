@@ -73,8 +73,8 @@ describe('accessors notifying by themselves', () => {
 
     const o = new Linked();
     const keys: string[] = [];
-    observe(o, 'a', (e) => keys.push(e.key));
-    observe(o, 'b', (e) => keys.push(e.key));
+    observe(o, 'a', (e) => keys.push(e.changed.key));
+    observe(o, 'b', (e) => keys.push(e.changed.key));
     set(o, 'a', 1);
     expect(keys).toEqual(['b', 'a']);
   });

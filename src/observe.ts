@@ -1,4 +1,5 @@
-import type { ChangeCallback } from './types.js';
+import { get } from './object.js';
+import type { ChangeCallback, PathOf, ValueOf } from './types.js';
 
 /** One `observe()` call: a callback on a path from a root object. */
 interface Subscription {
@@ -86,16 +87,21 @@ function dispose(subscription: Subscription): void {
 }
 
 /**
- * Observes an object value changing by following a path.
+ * Observes the value at the end of a path of an object.
  *
  * Changes are notified by using set() method to change the value on the object or by using notify() method after classical change.
+ * A change of an intermediate value of the path is notified when the value at the end of the path differs.
  * Observing twice the same path of the same object with the same callback has no effect.
  * @param object Object to observe.
  * @param path Path to the value to observe. ex: "a.b.c", "props.name" or "name".
  * @param onChangeCallback Callback function executed when value changed.
  * @returns A function that stops the observation, like `unobserve()`.
  */
-export function observe(object: object, path: string, onChangeCallback: ChangeCallback): () => void {
+export function observe<T extends object, P extends string>(
+  object: T,
+  path: P & PathOf<T, P>,
+  onChangeCallback: ChangeCallback<ValueOf<T, P>, T>,
+): () => void {
   let paths = ROOTS.get(object);
   if (!paths) {
     paths = new Map();
@@ -138,9 +144,10 @@ export function unobserve(object: object, path: string, onChangeCallback: Change
 }
 
 /**
- * Notifies the subscriptions attached to `object[key]`.
+ * Notifies the subscriptions attached to `object[key]`, with the values at the end of their path.
  *
  * Subscriptions for which `key` is an intermediate key are first attached again from their root, to follow the new value.
+ * They are not notified when `oldValue` is replaced by another value holding the same value at the end of their path.
  * Callbacks are called in the order of the `observe()` calls.
  * Every callback is called, even if one throws; errors are thrown afterwards.
  */
@@ -162,22 +169,26 @@ export function _resolve(object: unknown, key: string, oldValue: unknown, newVal
     }
 
     const depth = subscription.nodes.findIndex((ref, i) => ref.deref() === object && subscription.keys[i] === key);
-    if (depth < subscription.keys.length - 1) {
+    const isLeaf = depth === subscription.keys.length - 1;
+    let oldLeaf = oldValue;
+    let newLeaf = newValue;
+    if (!isLeaf) {
       detach(subscription);
       attach(subscription);
+      const rest = subscription.keys.slice(depth + 1).join('.');
+      oldLeaf = get(oldValue, rest);
+      newLeaf = get(newValue, rest);
+      // A replaced intermediate value with the same value at the end of the path is not a change for this path.
+      if (oldValue !== newValue && Object.is(oldLeaf, newLeaf)) continue;
     }
 
     try {
       subscription.callback({
-        object,
-        key,
-        oldValue,
-        newValue,
-        origin: {
-          object: subscription.root,
-          path: subscription.path,
-          oPath: subscription.keys.slice(0, Math.max(depth, 0)).join('.'),
-        },
+        path: subscription.path,
+        root,
+        oldValue: oldLeaf === undefined ? null : oldLeaf,
+        newValue: newLeaf === undefined ? null : newLeaf,
+        changed: { object, key },
       });
     } catch (error) {
       errors.push(error);

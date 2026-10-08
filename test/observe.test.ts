@@ -43,13 +43,12 @@ describe('ObjObs Tests', () => {
 
     set(test1, 'propA', 3);
     equal(results[0].name, 'callback1');
-    equal(results[0].object, test1);
-    equal(results[0].key, 'propA');
+    equal(results[0].changed.object, test1);
+    equal(results[0].changed.key, 'propA');
     equal(results[0].oldValue, 1);
     equal(results[0].newValue, 3);
-    equal(results[0].origin.object.deref(), test1);
-    equal(results[0].origin.path, 'propA');
-    equal(results[0].origin.oPath, '');
+    equal(results[0].root, test1);
+    equal(results[0].path, 'propA');
 
 
     observe(test1, 'propA', callback2);
@@ -103,7 +102,7 @@ describe('ObjObs Tests', () => {
     equal(results[0].name, 'callback1');
     set(test1, 'propB', 4);
     equal(results[1].name, 'callback2');
-    equal(results[1].key, 'propB');
+    equal(results[1].changed.key, 'propB');
 
     unobserve(test1, 'propA', callback1);
     equal(callbackEntriesA.size, 0, '0 entrie');
@@ -142,13 +141,12 @@ describe('ObjObs Tests', () => {
 
     set(test1, 'a.b.c.d', 2);
     equal(results[0].name, 'callback1');
-    equal(results[0].object, test1.a.b.c);
-    equal(results[0].key, 'd');
+    equal(results[0].changed.object, test1.a.b.c);
+    equal(results[0].changed.key, 'd');
     equal(results[0].oldValue, 1);
     equal(results[0].newValue, 2);
-    equal(results[0].origin.object.deref(), test1);
-    equal(results[0].origin.path, 'a.b.c.d');
-    equal(results[0].origin.oPath, 'a.b.c');
+    equal(results[0].root, test1);
+    equal(results[0].path, 'a.b.c.d');
 
     unobserve(test1, 'a.b.c.d', callback1);
     equal(ObjObs._OBSERVED.get(test1), undefined);
@@ -204,47 +202,43 @@ describe('ObjObs Tests', () => {
 
     set(test1, 'a.b', bV2);
     equal(results[0].name, 'callback1');
-    equal(results[0].object, test1.a);
-    equal(results[0].key, 'b');
-    equal(results[0].oldValue, bV1);
-    equal(results[0].newValue, bV2);
-    equal(results[0].origin.object.deref(), test1);
-    equal(results[0].origin.path, 'a.b.c.d');
-    equal(results[0].origin.oPath, 'a');
+    equal(results[0].changed.object, test1.a);
+    equal(results[0].changed.key, 'b');
+    equal(results[0].oldValue, 1);
+    equal(results[0].newValue, 3);
+    equal(results[0].root, test1);
+    equal(results[0].path, 'a.b.c.d');
 
 
     equal(results[1].name, 'callback2');
-    equal(results[1].object, test1.a);
-    equal(results[1].key, 'b');
-    equal(results[1].oldValue, bV1);
-    equal(results[1].newValue, bV2);
-    equal(results[1].origin.object.deref(), test1);
-    equal(results[1].origin.path, 'a.b.e.f');
-    equal(results[1].origin.oPath, 'a');
+    equal(results[1].changed.object, test1.a);
+    equal(results[1].changed.key, 'b');
+    equal(results[1].oldValue, 1);
+    equal(results[1].newValue, 3);
+    equal(results[1].root, test1);
+    equal(results[1].path, 'a.b.e.f');
 
     set(test1, 'a.b.c.d', 4);
     equal(results.length, 3);
     equal(results[2].name, 'callback1');
-    equal(results[2].object, test1.a.b.c);
-    equal(results[2].key, 'd');
+    equal(results[2].changed.object, test1.a.b.c);
+    equal(results[2].changed.key, 'd');
     equal(results[2].oldValue, 3);
     equal(results[2].newValue, 4);
-    equal(results[2].origin.object.deref(), test1);
-    equal(results[2].origin.path, 'a.b.c.d');
-    equal(results[2].origin.oPath, 'a.b.c');
+    equal(results[2].root, test1);
+    equal(results[2].path, 'a.b.c.d');
 
 
 
     set(test1, 'a.b.e.f', 4);
     equal(results.length, 4);
     equal(results[3].name, 'callback2');
-    equal(results[3].object, test1.a.b.e);
-    equal(results[3].key, 'f');
+    equal(results[3].changed.object, test1.a.b.e);
+    equal(results[3].changed.key, 'f');
     equal(results[3].oldValue, 3);
     equal(results[3].newValue, 4);
-    equal(results[3].origin.object.deref(), test1);
-    equal(results[3].origin.path, 'a.b.e.f');
-    equal(results[3].origin.oPath, 'a.b.e');
+    equal(results[3].root, test1);
+    equal(results[3].path, 'a.b.e.f');
 
     set(bV1, 'c.d', 5);
     equal(results.length, 4);

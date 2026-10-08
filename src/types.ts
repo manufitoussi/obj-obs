@@ -35,25 +35,19 @@ export type PathOf<T, P extends string> = string extends P ? P : P extends Path<
 /** Value type at `P` in `T`; `unknown` for a dynamic path. */
 export type ValueOf<T, P extends string> = string extends P ? unknown : PathValue<T, P>;
 
-/** Where a callback was registered from. */
-export interface Origin {
-  /** Root object given to `observe()`. */
-  object: WeakRef<object>;
-  /** Full observed path from the root. */
-  path: string;
-  /** Path from the root to the object holding this entry. */
-  oPath: string;
-}
-
 /** Argument given to an observation callback. */
-export interface ChangeEvent {
-  /** Object whose key has changed. */
-  object: object;
-  /** Changed key. */
-  key: string;
-  oldValue: unknown;
-  newValue: unknown;
-  origin: Origin;
+export interface ChangeEvent<V = unknown, R extends object = object> {
+  /** Observed path, from the root. */
+  path: string;
+  /** Root object given to `observe()`. */
+  root: R;
+  /** Value at the end of the path before the change; `null` when not found. */
+  oldValue: V | null;
+  /** Value at the end of the path after the change; `null` when not found. */
+  newValue: V | null;
+  /** Where the change happened: the value at the end of the path, or an intermediate one. */
+  changed: { object: object; key: string };
 }
 
-export type ChangeCallback = (event: ChangeEvent) => void;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ChangeCallback<V = any, R extends object = any> = (event: ChangeEvent<V, R>) => void;

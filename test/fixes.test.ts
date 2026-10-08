@@ -6,7 +6,7 @@ describe('subscriptions', () => {
   it('keeps the paths of a same callback independent', () => {
     const o = { a: { x: 1, y: 1 } };
     const paths: string[] = [];
-    const cb = (e: ChangeEvent) => paths.push(e.origin.path);
+    const cb = (e: ChangeEvent) => paths.push(e.path);
     observe(o, 'a.x', cb);
     observe(o, 'a.y', cb);
 
@@ -25,7 +25,7 @@ describe('subscriptions', () => {
     const binding1 = { dataContext: context };
     const binding2 = { dataContext: context };
     const roots: object[] = [];
-    const cb = (e: ChangeEvent) => roots.push(e.origin.object.deref()!);
+    const cb = (e: ChangeEvent) => roots.push(e.root);
     observe(binding1, 'dataContext.properties.color', cb);
     observe(binding2, 'dataContext.properties.color', cb);
 
@@ -76,7 +76,7 @@ describe('subscriptions', () => {
     observe(o, 'a.b', (e) => values.push(structuredClone(e.newValue)));
     set(o, 'a', { b: 1 });
     set(o, 'a.b', 2);
-    expect(values).toEqual([{ b: 1 }, 2]);
+    expect(values).toEqual([1, 2]);
   });
 });
 

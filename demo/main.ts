@@ -113,15 +113,14 @@ $('#clear-log').addEventListener('click', () => {
 });
 
 function logEvent(label: string, event: ChangeEvent) {
+  const leafKey = event.path.split('.').pop();
   log('event', [
     code(label),
-    ' ← ',
-    code(event.key),
     ' : ',
     code(format(event.oldValue)),
     ' → ',
     code(format(event.newValue)),
-    el('span', { className: 'hint', textContent: ` (sur ${event.origin.oPath.replace(/^state\.?/, '') || 'la racine'})` }),
+    event.changed.key === leafKey ? '' : el('span', { className: 'hint', textContent: ` (via le changement de ${event.changed.key})` }),
   ]);
 }
 
