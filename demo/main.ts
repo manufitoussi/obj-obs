@@ -399,11 +399,27 @@ let perfObjects: { a: { b: { c: { d: number } } } }[] = [];
 let perfDisposers: (() => void)[] = [];
 let perfCalls = 0;
 
+/** Used JS heap, in Chromium only (`performance.memory`), not collected: an approximation. */
+function heapSize(): number | undefined {
+  return (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize;
+}
+
+let bytesPerObservation: number | undefined;
+
 function time(label: string, action: () => void) {
   const start = performance.now();
   action();
   const duration = performance.now() - start;
-  $('#perf-result').textContent = `${label} : ${duration.toFixed(1)} ms · ${perfObjects.length} objets, ${perfDisposers.length} observations, ${perfCalls} notifications`;
+  const heap = heapSize();
+  const memory = [
+    heap === undefined ? '' : `tas ≈ ${(heap / 1e6).toFixed(0)} Mo`,
+    bytesPerObservation === undefined ? '' : `≈ ${bytesPerObservation.toFixed(0)} o par observation`,
+  ].filter(Boolean);
+  $('#perf-result').textContent = [
+    `${label} : ${duration.toFixed(1)} ms`,
+    `${perfObjects.length} objets, ${perfDisposers.length} observations, ${perfCalls} notifications`,
+    ...memory,
+  ].join(' · ');
 }
 
 $<HTMLFormElement>('#perf-form').addEventListener('submit', (submit) => {
@@ -418,7 +434,10 @@ $<HTMLFormElement>('#perf-form').addEventListener('submit', (submit) => {
       perfDisposers.forEach((dispose) => dispose());
       perfCalls = 0;
       perfObjects = Array.from({ length: count }, (_, i) => ({ a: { b: { c: { d: i } } } }));
+      const before = heapSize();
       perfDisposers = perfObjects.map((o) => observe(o, 'a.b.c.d', onChange));
+      const after = heapSize();
+      bytesPerObservation = before === undefined || after === undefined ? undefined : (after - before) / count;
     });
   } else if (step === 'change') {
     time('Modification de a.b.c.d', () => perfObjects.forEach((o) => set(o, 'a.b.c.d', o.a.b.c.d + 1)));

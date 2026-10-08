@@ -13,7 +13,7 @@ type Result = ChangeEvent & { name: string };
 describe('ObjObs Tests', () => {
   it('ObjObs instance', () => {
     ok(ObjObs);
-    ok(ObjObs._OBSERVED);
+    ok(ObjObs._countAttachments);
     ok(ObjObs._resolve);
     ok(ObjObs.observe);
     ok(ObjObs.unobserve);
@@ -35,11 +35,8 @@ describe('ObjObs Tests', () => {
     };
 
     observe(test1, 'propA', callback1);
-    const pathEntries = ObjObs._OBSERVED.get(test1)!;
-    equal(pathEntries.size, 1, '1 entrie');
-
-    const callbackEntries = pathEntries!.get('propA')!;
-    equal(callbackEntries.size, 1, '1 entrie');
+    equal(ObjObs._countAttachments(test1), 1);
+    equal(ObjObs._countAttachments(test1, 'propA'), 1);
 
     set(test1, 'propA', 3);
     equal(results[0].name, 'callback1');
@@ -52,21 +49,21 @@ describe('ObjObs Tests', () => {
 
 
     observe(test1, 'propA', callback2);
-    equal(callbackEntries.size, 2, '2 entries');
+    equal(ObjObs._countAttachments(test1, 'propA'), 2);
 
     set(test1, 'propA', 4);
     equal(results[1].name, 'callback1');
     equal(results[2].name, 'callback2');
 
     unobserve(test1, 'propA', callback1);
-    equal(callbackEntries.size, 1, '1 entrie');
+    equal(ObjObs._countAttachments(test1, 'propA'), 1);
     set(test1, 'propA', 5);
     equal(results[3].name, 'callback2');
     equal(results.length, 4);
 
 
     unobserve(test1, 'propA', callback2);
-    equal(callbackEntries.size, 0, '0 entrie');
+    equal(ObjObs._countAttachments(test1, 'propA'), 0);
     set(test1, 'propA', 5);
     equal(results.length, 4);
 
@@ -89,14 +86,9 @@ describe('ObjObs Tests', () => {
 
     observe(test1, 'propA', callback1);
     observe(test1, 'propB', callback2);
-    const pathEntries = ObjObs._OBSERVED.get(test1)!;
-    equal(pathEntries.size, 2, '2 entries');
-
-    const callbackEntriesA = pathEntries!.get('propA')!;
-    equal(callbackEntriesA.size, 1, '1 entrie');
-
-    const callbackEntriesB = pathEntries!.get('propB')!;
-    equal(callbackEntriesB.size, 1, '1 entrie');
+    equal(ObjObs._countAttachments(test1), 2);
+    equal(ObjObs._countAttachments(test1, 'propA'), 1);
+    equal(ObjObs._countAttachments(test1, 'propB'), 1);
 
     set(test1, 'propA', 3);
     equal(results[0].name, 'callback1');
@@ -105,7 +97,7 @@ describe('ObjObs Tests', () => {
     equal(results[1].changed.key, 'propB');
 
     unobserve(test1, 'propA', callback1);
-    equal(callbackEntriesA.size, 0, '0 entrie');
+    equal(ObjObs._countAttachments(test1, 'propA'), 0);
   });
 
   it('path observation', () => {
@@ -134,10 +126,10 @@ describe('ObjObs Tests', () => {
     };
 
     observe(test1, 'a.b.c.d', callback1);
-    ok(ObjObs._OBSERVED.get(test1))!;
-    ok(ObjObs._OBSERVED.get(test1.a))!;
-    ok(ObjObs._OBSERVED.get(test1.a.b))!;
-    ok(ObjObs._OBSERVED.get(test1.a.b.c))!;
+    equal(ObjObs._countAttachments(test1), 1);
+    equal(ObjObs._countAttachments(test1.a), 1);
+    equal(ObjObs._countAttachments(test1.a.b), 1);
+    equal(ObjObs._countAttachments(test1.a.b.c), 1);
 
     set(test1, 'a.b.c.d', 2);
     equal(results[0].name, 'callback1');
@@ -149,10 +141,10 @@ describe('ObjObs Tests', () => {
     equal(results[0].path, 'a.b.c.d');
 
     unobserve(test1, 'a.b.c.d', callback1);
-    equal(ObjObs._OBSERVED.get(test1), undefined);
-    equal(ObjObs._OBSERVED.get(test1.a), undefined);
-    equal(ObjObs._OBSERVED.get(test1.a.b), undefined);
-    equal(ObjObs._OBSERVED.get(test1.a.b.c), undefined);
+    equal(ObjObs._countAttachments(test1), 0);
+    equal(ObjObs._countAttachments(test1.a), 0);
+    equal(ObjObs._countAttachments(test1.a.b), 0);
+    equal(ObjObs._countAttachments(test1.a.b.c), 0);
     set(test1, 'a.b.c.d', 3);
     equal(results.length, 1);
     equal(test1.a.b.c.d, 3);
