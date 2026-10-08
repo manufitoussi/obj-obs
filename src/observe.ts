@@ -29,6 +29,11 @@ type Attachments = (Subscription | number)[];
  */
 const OBSERVED = new WeakMap<object, Attachments | Map<string, Attachments>>();
 
+/*
+ * Entries of OBSERVED and ROOTS are never deleted, only emptied: deleting entries of a large WeakMap
+ * degrades V8 badly (beyond about a million entries). Entries of collected objects go away with them.
+ */
+
 /** Pairs in a single list before splitting it by key. */
 const SPLIT_SIZE = 32;
 
@@ -97,6 +102,11 @@ function add(node: object, subscription: Subscription, depth: number): void {
   }
 
   if (Array.isArray(entry)) {
+    if (!entry.length) {
+      entry.push(subscription, depth);
+      return;
+    }
+
     insertPair(entry, subscription, depth);
     if (entry.length > SPLIT_SIZE * 2) OBSERVED.set(node, splitByKey(entry));
     return;
@@ -112,15 +122,13 @@ function remove(node: object, subscription: Subscription, depth: number): void {
   const entry = OBSERVED.get(node);
   if (!entry) return;
   if (Array.isArray(entry)) {
-    if (removePair(entry, subscription, depth) && !entry.length) OBSERVED.delete(node);
+    removePair(entry, subscription, depth);
     return;
   }
 
   const key = subscription.keys[depth];
   const list = entry.get(key);
-  if (!list || !removePair(list, subscription, depth) || list.length) return;
-  entry.delete(key);
-  if (!entry.size) OBSERVED.delete(node);
+  if (list && removePair(list, subscription, depth) && !list.length) entry.delete(key);
 }
 
 /** Pairs observing `node[key]`, in subscription order. */
@@ -184,10 +192,9 @@ function dispose(subscription: Subscription): void {
   walk(subscription, root, 0, remove);
   const entry = ROOTS.get(root);
   if (entry === subscription) {
-    ROOTS.delete(root);
+    ROOTS.set(root, []);
   } else if (Array.isArray(entry)) {
     entry.splice(entry.indexOf(subscription), 1);
-    if (entry.length === 1) ROOTS.set(root, entry[0]);
   }
 }
 
@@ -219,7 +226,7 @@ export function observe<T extends object, P extends string>(
     };
 
     const entry = ROOTS.get(object);
-    if (!entry) ROOTS.set(object, subscription);
+    if (!entry || (Array.isArray(entry) && !entry.length)) ROOTS.set(object, subscription);
     else if (Array.isArray(entry)) entry.push(subscription);
     else ROOTS.set(object, [entry, subscription]);
     walk(subscription, object, 0, add);
