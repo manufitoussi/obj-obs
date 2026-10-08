@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mire obj-obs</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>Mire obj-obs</h1>
+      <p>Manipulez l'objet observé, ajoutez des observateurs et des liaisons, et suivez les notifications dans le journal.</p>
+    </header>
+
+    <main>
+      <section id="preview-section">
+        <h2>Aperçu</h2>
+        <p class="hint">Les acteurs affichés suivent <code>actors.*.properties</code> via des observateurs.</p>
+        <div id="preview"></div>
+      </section>
+
+      <section id="state-section">
+        <h2>Objet observé</h2>
+        <p class="hint">
+          Les champs de <code>properties</code> sont des accessors qui appellent <code>notify()</code>, comme dans Synapps.
+          Une modification passe par
+          <label class="inline"><input type="radio" name="write-mode" value="set" checked /> <code>set()</code></label>
+          <label class="inline"><input type="radio" name="write-mode" value="assign" /> une affectation directe</label>
+        </p>
+        <div id="tree"></div>
+      </section>
+
+      <section id="actions-section">
+        <h2>Actions</h2>
+        <form id="action-form" class="grid">
+          <label>Chemin <input name="path" value="actors.text1.properties.color" list="paths" required /></label>
+          <label>Valeur <span class="hint">(expression JS)</span> <input name="value" value="'#2a9d8f'" /></label>
+          <div class="buttons">
+            <button type="submit" name="action" value="set">set()</button>
+            <button type="submit" name="action" value="assign">Affectation directe</button>
+            <button type="submit" name="action" value="notify">notify()</button>
+            <button type="submit" name="action" value="get">get()</button>
+          </div>
+        </form>
+        <output id="action-result"></output>
+        <div class="buttons">
+          <button id="replace-properties">Remplacer <code>actors.text1.properties</code></button>
+          <button id="null-actor">Mettre <code>actors.text1</code> à null</button>
+          <button id="reset-state">Réinitialiser l'objet</button>
+        </div>
+      </section>
+
+      <section id="observers-section">
+        <h2>Observateurs</h2>
+        <form id="observer-form" class="row">
+          <input name="path" value="actors.text1.properties.color" list="paths" required aria-label="Chemin à observer" />
+          <label class="inline"><input type="checkbox" name="throws" /> lève une erreur</label>
+          <button type="submit">observe()</button>
+        </form>
+        <ul id="observers" class="cards"></ul>
+      </section>
+
+      <section id="bindings-section">
+        <h2>Liaisons</h2>
+        <p class="hint">Une liaison minimale construite avec <code>observe</code>, <code>get</code>, <code>set</code> et <code>isEqual</code>, sur le modèle de <code>BasicBinding</code>.</p>
+        <form id="binding-form" class="grid">
+          <label>Source <input name="source" value="actors.text1.properties.color" list="paths" required /></label>
+          <label>Cible <input name="target" value="actors.text2.properties.color" list="paths" required /></label>
+          <div class="buttons">
+            <label class="inline"><input type="checkbox" name="canWrite" /> écriture activée</label>
+            <label class="inline"><input type="checkbox" name="onetime" /> lecture unique</label>
+            <button type="submit">Lier</button>
+          </div>
+        </form>
+        <ul id="bindings" class="cards"></ul>
+      </section>
+
+      <section id="log-section">
+        <h2>Journal <button id="clear-log" class="small">Effacer</button></h2>
+        <ol id="log"></ol>
+      </section>
+
+      <section id="equal-section">
+        <h2>isEqual</h2>
+        <form id="equal-form" class="grid">
+          <label>a <span class="hint">(expression JS)</span><textarea name="a" rows="3">{ date: new Date(0), list: [1, NaN], map: new Map([['k', { v: 1 }]]) }</textarea></label>
+          <label>b <span class="hint">(expression JS)</span><textarea name="b" rows="3">{ list: [1, NaN], map: new Map([['k', { v: 1 }]]), date: new Date(0) }</textarea></label>
+          <div class="buttons"><button type="submit">Comparer</button></div>
+        </form>
+        <output id="equal-result"></output>
+      </section>
+
+      <section id="perf-section">
+        <h2>Performance</h2>
+        <form id="perf-form" class="row">
+          <label class="inline">Objets <input name="count" type="number" value="20000" min="1" /></label>
+          <button type="submit" name="step" value="create">Créer et observer</button>
+          <button type="submit" name="step" value="change">Modifier tout</button>
+          <button type="submit" name="step" value="replace">Remplacer les intermédiaires</button>
+          <button type="submit" name="step" value="dispose">Tout désobserver</button>
+        </form>
+        <output id="perf-result"></output>
+      </section>
+    </main>
+
+    <datalist id="paths"></datalist>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

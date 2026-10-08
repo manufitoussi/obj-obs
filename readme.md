@@ -47,4 +47,6 @@ yarn build
 
 `yarn build` compiles `src/` to ES modules and type declarations in `dist/`.
 
-Samples load `dist/` as ES modules, so they must be served over HTTP, e.g. `npx vite` at the repository root, then open `/samples/sample1.html`.
+## Demo
+
+`yarn demo` serves an interactive test page at http://localhost:5173: edit the observed object, add observers and bindings, follow the notifications in a log, compare values with `isEqual` and measure performance. It imports `src/` directly and reloads on change.
