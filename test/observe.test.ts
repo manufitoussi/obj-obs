@@ -1,6 +1,10 @@
+import { describe, it } from 'vitest';
 import { equal, ok } from 'assert';
 import ObjObs, { observe, unobserve } from '../src/observe.js';
-import { get, set, notify } from '../src/object.js';
+import { get, set } from '../src/object.js';
+import type { ChangeEvent } from '../src/types.js';
+
+type Result = ChangeEvent & { name: string };
 
 // TODO test set
 // TODO test get
@@ -21,20 +25,20 @@ describe('ObjObs Tests', () => {
       propB: 2,
     };
 
-    const results = [];
-    const callback1 = (args) => {
+    const results: Result[] = [];
+    const callback1 = (args: ChangeEvent) => {
       results.push({ name: 'callback1', ...args });
     };
 
-    const callback2 = (args) => {
+    const callback2 = (args: ChangeEvent) => {
       results.push({ name: 'callback2', ...args });
     };
 
     observe(test1, 'propA', callback1);
-    const pathEntries = ObjObs._OBSERVED.get(test1);
+    const pathEntries = ObjObs._OBSERVED.get(test1)!;
     equal(pathEntries.size, 1, '1 entrie');
 
-    const callbackEntries = pathEntries.get('propA');
+    const callbackEntries = pathEntries!.get('propA')!;
     equal(callbackEntries.size, 1, '1 entrie');
 
     set(test1, 'propA', 3);
@@ -75,24 +79,24 @@ describe('ObjObs Tests', () => {
       propB: 2,
     };
 
-    const results = [];
-    const callback1 = (args) => {
+    const results: Result[] = [];
+    const callback1 = (args: ChangeEvent) => {
       results.push({ name: 'callback1', ...args });
     };
 
-    const callback2 = (args) => {
+    const callback2 = (args: ChangeEvent) => {
       results.push({ name: 'callback2', ...args });
     };
 
     observe(test1, 'propA', callback1);
     observe(test1, 'propB', callback2);
-    const pathEntries = ObjObs._OBSERVED.get(test1);
+    const pathEntries = ObjObs._OBSERVED.get(test1)!;
     equal(pathEntries.size, 2, '2 entries');
 
-    const callbackEntriesA = pathEntries.get('propA');
+    const callbackEntriesA = pathEntries!.get('propA')!;
     equal(callbackEntriesA.size, 1, '1 entrie');
 
-    const callbackEntriesB = pathEntries.get('propB');
+    const callbackEntriesB = pathEntries!.get('propB')!;
     equal(callbackEntriesB.size, 1, '1 entrie');
 
     set(test1, 'propA', 3);
@@ -121,20 +125,20 @@ describe('ObjObs Tests', () => {
         }
       }
     };
-    const results = [];
-    const callback1 = (args) => {
+    const results: Result[] = [];
+    const callback1 = (args: ChangeEvent) => {
       results.push({ name: 'callback1', ...args });
     };
 
-    const callback2 = (args) => {
+    const callback2 = (args: ChangeEvent) => {
       results.push({ name: 'callback2', ...args });
     };
 
     observe(test1, 'a.b.c.d', callback1);
-    ok(ObjObs._OBSERVED.get(test1));
-    ok(ObjObs._OBSERVED.get(test1.a));
-    ok(ObjObs._OBSERVED.get(test1.a.b));
-    ok(ObjObs._OBSERVED.get(test1.a.b.c));
+    ok(ObjObs._OBSERVED.get(test1))!;
+    ok(ObjObs._OBSERVED.get(test1.a))!;
+    ok(ObjObs._OBSERVED.get(test1.a.b))!;
+    ok(ObjObs._OBSERVED.get(test1.a.b.c))!;
 
     set(test1, 'a.b.c.d', 2);
     equal(results[0].name, 'callback1');
@@ -147,14 +151,14 @@ describe('ObjObs Tests', () => {
     equal(results[0].origin.oPath, 'a.b.c');
 
     unobserve(test1, 'a.b.c.d', callback1);
-    equal(ObjObs._OBSERVED.get(test1).size, 1);
-    equal(ObjObs._OBSERVED.get(test1).get('a').size, 0);
-    equal(ObjObs._OBSERVED.get(test1.a).size, 1);
-    equal(ObjObs._OBSERVED.get(test1.a).get('b').size, 0);
-    equal(ObjObs._OBSERVED.get(test1.a.b).size, 1);
-    equal(ObjObs._OBSERVED.get(test1.a.b).get('c').size, 0);
-    equal(ObjObs._OBSERVED.get(test1.a.b.c).size, 1);
-    equal(ObjObs._OBSERVED.get(test1.a.b.c).get('d').size, 0);
+    equal(ObjObs._OBSERVED.get(test1)!.size, 1);
+    equal(ObjObs._OBSERVED.get(test1)!.get('a')!.size, 0);
+    equal(ObjObs._OBSERVED.get(test1.a)!.size, 1);
+    equal(ObjObs._OBSERVED.get(test1.a)!.get('b')!.size, 0);
+    equal(ObjObs._OBSERVED.get(test1.a.b)!.size, 1);
+    equal(ObjObs._OBSERVED.get(test1.a.b)!.get('c')!.size, 0);
+    equal(ObjObs._OBSERVED.get(test1.a.b.c)!.size, 1);
+    equal(ObjObs._OBSERVED.get(test1.a.b.c)!.get('d')!.size, 0);
     set(test1, 'a.b.c.d', 3);
     equal(results.length, 1);
     equal(test1.a.b.c.d, 3);
@@ -182,12 +186,12 @@ describe('ObjObs Tests', () => {
         }
       }
     };
-    const results = [];
-    const callback1 = (args) => {
+    const results: Result[] = [];
+    const callback1 = (args: ChangeEvent) => {
       results.push({ name: 'callback1', ...args });
     };
 
-    const callback2 = (args) => {
+    const callback2 = (args: ChangeEvent) => {
       results.push({ name: 'callback2', ...args });
     };
 

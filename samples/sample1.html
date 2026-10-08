@@ -2,10 +2,8 @@
 <html>
 
 <head>
-  <script src="../dist/obj-obs.js"></script>
-  <script>
-    console.log(ObjObs);
-    const { get, set, observe, unobserve } = ObjObs;
+  <script type="module">
+    import { get, set, observe, unobserve } from '../dist/index.js';
     const container = {
       objs: null,
     };
@@ -68,6 +66,9 @@
     }
 
     observe(container, 'objs', onObjsChange);
+
+    // Module scope: expose the handlers used by the onclick attributes.
+    Object.assign(window, { createObjs, deleteObjs, observeAll, unobserveAll });
 
   </script>
 </head>
