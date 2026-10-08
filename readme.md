@@ -18,6 +18,17 @@ unobserve(actor, 'properties.color', onColorChange);
 ```
 
 Changes are only notified through `set()`, or through `notify()` after a direct assignment.
+`set()` does not notify when the new value is the same as the old one (`Object.is`).
+
+`observe()` returns a function that stops the observation, like `unobserve()`.
+
+## Comparing values
+
+`isEqual(a, b)` compares values structurally: dates, regular expressions, arrays, typed arrays, plain objects, maps and sets, cyclic structures included. Other objects, like class instances, are compared by identity.
+
+```ts
+isEqual({ a: [1, new Date(0)] }, { a: [1, new Date(0)] }); // true
+```
 
 ## TypeScript
 

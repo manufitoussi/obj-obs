@@ -9,6 +9,7 @@ function splitLast(path: string): [string[], string] {
 
 /**
  * Change the value following a path of an object.
+ * Observers are not notified when the value is the same (`Object.is`).
  * @param object Object to change.
  * @param path Path to the value to change.
  * @param value New value.
@@ -26,6 +27,7 @@ export function set<T, P extends string>(object: T, path: P & PathOf<T, P>, valu
 
   const oldValue = current[lastKey];
   current[lastKey] = value;
+  if (Object.is(oldValue, value)) return;
   _resolve(current, lastKey, oldValue, value);
 }
 
