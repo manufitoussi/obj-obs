@@ -151,14 +151,10 @@ describe('ObjObs Tests', () => {
     equal(results[0].origin.oPath, 'a.b.c');
 
     unobserve(test1, 'a.b.c.d', callback1);
-    equal(ObjObs._OBSERVED.get(test1)!.size, 1);
-    equal(ObjObs._OBSERVED.get(test1)!.get('a')!.size, 0);
-    equal(ObjObs._OBSERVED.get(test1.a)!.size, 1);
-    equal(ObjObs._OBSERVED.get(test1.a)!.get('b')!.size, 0);
-    equal(ObjObs._OBSERVED.get(test1.a.b)!.size, 1);
-    equal(ObjObs._OBSERVED.get(test1.a.b)!.get('c')!.size, 0);
-    equal(ObjObs._OBSERVED.get(test1.a.b.c)!.size, 1);
-    equal(ObjObs._OBSERVED.get(test1.a.b.c)!.get('d')!.size, 0);
+    equal(ObjObs._OBSERVED.get(test1), undefined);
+    equal(ObjObs._OBSERVED.get(test1.a), undefined);
+    equal(ObjObs._OBSERVED.get(test1.a.b), undefined);
+    equal(ObjObs._OBSERVED.get(test1.a.b.c), undefined);
     set(test1, 'a.b.c.d', 3);
     equal(results.length, 1);
     equal(test1.a.b.c.d, 3);

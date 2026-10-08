@@ -39,6 +39,7 @@ export function get<T, P extends string>(object: T, path: P & PathOf<T, P>): Val
 export function get<T>(object: T, path?: '' | null): T;
 export function get(object: unknown, path?: string | null): unknown {
   if (!path) return object;
+  if (!object || typeof object !== 'object') return null;
   const [keys, lastKey] = splitLast(path);
   let current = object as Record<string, unknown>;
   for (const key of keys) {
