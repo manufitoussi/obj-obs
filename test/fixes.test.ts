@@ -80,6 +80,22 @@ describe('subscriptions', () => {
   });
 });
 
+describe('notification order', () => {
+  it('follows the creation order, even after observations were attached again', () => {
+    const root = { state: { a: { v: 1 }, b: { v: 1 } } };
+    const calls: string[] = [];
+    observe(root, 'state.a.v', () => calls.push('a'));
+    observe(root, 'state.b.v', () => calls.push('b'));
+
+    // Attaches the first observation again.
+    set(root, 'state.a', { v: 2 });
+    calls.length = 0;
+
+    set(root, 'state', { a: { v: 3 }, b: { v: 3 } });
+    expect(calls).toEqual(['a', 'b']);
+  });
+});
+
 describe('callback errors', () => {
   it('calls every callback and throws the error afterwards', () => {
     const o = { v: 1 };

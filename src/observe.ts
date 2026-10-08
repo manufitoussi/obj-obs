@@ -2,6 +2,8 @@ import type { ChangeCallback } from './types.js';
 
 /** One `observe()` call: a callback on a path from a root object. */
 interface Subscription {
+  /** Creation order: subscriptions are notified in this order. */
+  id: number;
   root: WeakRef<object>;
   path: string;
   keys: string[];
@@ -24,6 +26,8 @@ const OBSERVED = new WeakMap<object, Map<string, Set<Subscription>>>();
 
 /** Subscriptions by root object, path and callback, to find them back in `unobserve()`. */
 const ROOTS = new WeakMap<object, Map<string, Map<ChangeCallback, Subscription>>>();
+
+let lastId = 0;
 
 function isObject(value: unknown): value is object {
   return !!value && typeof value === 'object';
@@ -107,6 +111,7 @@ export function observe(object: object, path: string, onChangeCallback: ChangeCa
   let subscription = callbacks.get(onChangeCallback);
   if (!subscription) {
     subscription = {
+      id: ++lastId,
       root: new WeakRef(object),
       path,
       keys: path.split('.'),
@@ -136,6 +141,7 @@ export function unobserve(object: object, path: string, onChangeCallback: Change
  * Notifies the subscriptions attached to `object[key]`.
  *
  * Subscriptions for which `key` is an intermediate key are first attached again from their root, to follow the new value.
+ * Callbacks are called in the order of the `observe()` calls.
  * Every callback is called, even if one throws; errors are thrown afterwards.
  */
 export function _resolve(object: unknown, key: string, oldValue: unknown, newValue: unknown): void {
@@ -144,7 +150,9 @@ export function _resolve(object: unknown, key: string, oldValue: unknown, newVal
   if (!keyEntry) return;
 
   const errors: unknown[] = [];
-  for (const subscription of [...keyEntry]) {
+  // Attaching again moves a subscription to the end of the sets: sort to keep the creation order.
+  const subscriptions = [...keyEntry].sort((a, b) => a.id - b.id);
+  for (const subscription of subscriptions) {
     // Disposed by a previous callback.
     if (!keyEntry.has(subscription)) continue;
     const root = subscription.root.deref();
