@@ -20,6 +20,8 @@ unobserve(actor, 'properties.color', onColorChange);
 Changes are only notified through `set()`, or through `notify()` after a direct assignment.
 `set()` does not notify when the new value is the same as the old one (`Object.is`).
 
+Properties mapped to accessors that call `notify()` in their setter are notified once, whether they are changed with `set()` or by a direct assignment.
+
 `observe()` returns a function that stops the observation, like `unobserve()`.
 
 ## Comparing values

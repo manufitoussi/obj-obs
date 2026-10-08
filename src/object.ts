@@ -1,6 +1,9 @@
 import { _resolve } from './observe.js';
 import type { PathOf, ValueOf } from './types.js';
 
+/** Assignments in progress in `set()`, to detect accessors that notify by themselves. */
+const assignments: { object: object; key: string; notified: boolean }[] = [];
+
 function splitLast(path: string): [string[], string] {
   const keys = path.split('.');
   const lastKey = keys.pop() as string;
@@ -9,7 +12,8 @@ function splitLast(path: string): [string[], string] {
 
 /**
  * Change the value following a path of an object.
- * Observers are not notified when the value is the same (`Object.is`).
+ * Observers are not notified when the value is the same (`Object.is`),
+ * nor a second time when the property is an accessor calling `notify()` by itself.
  * @param object Object to change.
  * @param path Path to the value to change.
  * @param value New value.
@@ -26,8 +30,16 @@ export function set<T, P extends string>(object: T, path: P & PathOf<T, P>, valu
   }
 
   const oldValue = current[lastKey];
-  current[lastKey] = value;
-  if (Object.is(oldValue, value)) return;
+  const assignment = { object: current, key: lastKey, notified: false };
+  assignments.push(assignment);
+  try {
+    current[lastKey] = value;
+  } finally {
+    assignments.pop();
+  }
+
+  // An accessor that notifies by itself has already done the job.
+  if (assignment.notified || Object.is(oldValue, value)) return;
   _resolve(current, lastKey, oldValue, value);
 }
 
@@ -62,7 +74,15 @@ export function get(object: unknown, path?: string | null): unknown {
  */
 export function notify(object: object, path: string, oldValue: unknown, newValue: unknown): void {
   const [keys, lastKey] = splitLast(path);
-  _resolve(get(object, keys.join('.') as string), lastKey, oldValue, newValue);
+  const target = get(object, keys.join('.') as string);
+  for (let i = assignments.length - 1; i >= 0; i--) {
+    if (assignments[i].object === target && assignments[i].key === lastKey) {
+      assignments[i].notified = true;
+      break;
+    }
+  }
+
+  _resolve(target, lastKey, oldValue, newValue);
 }
 
 export default {
